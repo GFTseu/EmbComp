@@ -10,7 +10,7 @@
         android:id="@+id/SearchBluetoothBtn"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:text="Searching Bluetooth"
+        android:text="寻找蓝牙"
         tools:ignore="MissingConstraints"
         android:backgroundTint="#00BCD4"
         android:layout_alignParentTop="true"  />
@@ -46,9 +46,207 @@
         tools:ignore="MissingConstraints" />
 
     <TextView
+        android:id="@+id/TextView3"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:text="可用蓝牙"
+        android:layout_below="@id/button4"
+        android:gravity="center"
+        android:layout_centerHorizontal="true"
+        android:background="#AFDFE5"
+        tools:ignore="MissingConstraints" />
+
+    <ListView
+        android:id="@+id/BluetoothListView"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_below="@id/TextView3"
+        android:background="#72D8EB"
+        tools:ignore="MissingConstraints" />
+
+    <Button
+        android:id="@+id/forwardGeParams"
+        android:layout_width="90dp"
+        android:layout_height="120dp"
+        android:layout_below="@id/BluetoothListView"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="5dp"
+        android:gravity="center_vertical|left"
+        android:text="前拨\n档位\n偏移"
+        android:textColor="#000000"
+        android:textSize="25dp"
+        android:backgroundTint="#00BCD4"
+        tools:ignore="MissingConstraints" />
+
+    <Spinner
+        android:id="@+id/forwardGeSpinner"
+        android:layout_below="@id/BluetoothListView"
+        android:layout_toRightOf="@id/forwardGeParams"
+        android:layout_marginTop="40dp"
+        android:layout_width="110dp"
+        android:layout_height="50dp"
+        android:layout_weight="1"
+        android:textSize="20dp"
+        android:entries="@array/forwardGeSpinner" />
+
+    <Button
+        android:id="@+id/forwardGeParamDec"
+        android:layout_width="50dp"
+        android:layout_height="60dp"
+        android:layout_below="@id/BluetoothListView"
+        android:layout_toRightOf="@id/forwardGeSpinner"
+        android:layout_marginLeft="3dp"
+        android:layout_marginTop="40dp"
+        android:gravity="center_vertical|left"
+        android:text="降低"
+        android:textColor="#000000"
+        android:textSize="15dp"
+        android:backgroundTint="#72D8EB"
+        tools:ignore="MissingConstraints" />
+
+    <EditText
+        android:id="@+id/forwardGeValue"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:layout_toRightOf="@id/forwardGeParamDec"
+        android:layout_below="@id/BluetoothListView"
+        android:layout_marginLeft="3dp"
+        android:layout_marginTop="40dp"
+        android:selectAllOnFocus="true"
+        android:digits="1234567890-"
+        android:textSize="15dp"
+        android:text="0"
+        tools:ignore="MissingConstraints" />
+
+    <Button
+        android:id="@+id/forwardGeParamInc"
+        android:layout_width="50dp"
+        android:layout_height="60dp"
+        android:layout_below="@id/BluetoothListView"
+        android:layout_toRightOf="@id/forwardGeValue"
+        android:layout_marginLeft="3dp"
+        android:layout_marginTop="40dp"
+        android:gravity="center_vertical|left"
+        android:text="升高"
+        android:textColor="#000000"
+        android:textSize="15dp"
+        android:backgroundTint="#72D8EB"
+        tools:ignore="MissingConstraints" />
+
+    <Button
+        android:id="@+id/backGeParams"
+        android:layout_width="90dp"
+        android:layout_height="120dp"
+        android:layout_below="@id/forwardGeParams"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="5dp"
+        android:gravity="center_vertical|left"
+        android:text="后拨\n档位\n偏移"
+        android:textColor="#000000"
+        android:textSize="25dp"
+        android:backgroundTint="#00BCD4"
+        tools:ignore="MissingConstraints" />
+
+    <Spinner
+        android:id="@+id/backGeSpinner"
+        android:layout_below="@id/forwardGeSpinner"
+        android:layout_toRightOf="@id/backGeParams"
+        android:layout_marginTop="75dp"
+        android:layout_width="110dp"
+        android:layout_height="50dp"
+        android:layout_weight="1"
+        android:textSize="20dp"
+        android:entries="@array/backGeSpinner" />
+
+    <Button
+        android:id="@+id/backGeParamDec"
+        android:layout_width="50dp"
+        android:layout_height="60dp"
+        android:layout_below="@id/forwardGeParamDec"
+        android:layout_toRightOf="@id/backGeSpinner"
+        android:layout_marginLeft="3dp"
+        android:layout_marginTop="65dp"
+        android:gravity="center_vertical|left"
+        android:text="降低"
+        android:textColor="#000000"
+        android:textSize="15dp"
+        android:backgroundTint="#72D8EB"
+        tools:ignore="MissingConstraints" />
+
+    <EditText
+        android:id="@+id/backGeValue"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:layout_toRightOf="@id/backGeParamDec"
+        android:layout_below="@id/forwardGeValue"
+        android:layout_marginLeft="3dp"
+        android:layout_marginTop="87dp"
+        android:selectAllOnFocus="true"
+        android:digits="1234567890-"
+        android:textSize="15dp"
+        android:text="0"
+        tools:ignore="MissingConstraints" />
+
+    <Button
+        android:id="@+id/backGeParamInc"
+        android:layout_width="50dp"
+        android:layout_height="60dp"
+        android:layout_below="@id/forwardGeParamInc"
+        android:layout_toRightOf="@id/forwardGeValue"
+        android:layout_marginLeft="3dp"
+        android:layout_marginTop="65dp"
+        android:gravity="center_vertical|left"
+        android:text="升高"
+        android:textColor="#000000"
+        android:textSize="15dp"
+        android:backgroundTint="#72D8EB"
+        tools:ignore="MissingConstraints" />
+
+    <TextView
+        android:id="@+id/forwardGeHint"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@id/backGeParams"
+        android:layout_marginLeft="10dp"
+        android:gravity="center_vertical|left"
+        android:text="在调整前拨档位前，需要将后拨调到一档。使用“前拨档位偏移”或“后拨档位偏移”按钮一键降档。"
+        android:textSize="15dp"
+        tools:ignore="MissingConstraints" />
+
+    <TextView
+        android:id="@+id/currentStepFreqency"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@id/forwardGeHint"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:gravity="center_vertical|left"
+        android:text="当前踏频：无数据"
+        android:textSize="20dp"
+        android:textColor="#000000"
+        tools:ignore="MissingConstraints" />
+
+    <TextView
+        android:id="@+id/currentVelocity"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@id/currentStepFreqency"
+        android:layout_marginLeft="10dp"
+        android:gravity="center_vertical|left"
+        android:text="当前车速：无数据"
+        android:textSize="20dp"
+        android:textColor="#000000"
+        tools:ignore="MissingConstraints" />
+
+
+
+
+
+
+    <TextView
         android:id="@+id/WaveTypeTextView"
         android:layout_width="100dp"
-        android:layout_height="30dp"
+        android:layout_height="0dp"
         android:layout_below="@id/TextView0"
         android:layout_marginLeft="5dp"
         android:gravity="center_vertical|left"
@@ -59,7 +257,7 @@
     <TextView
         android:id="@+id/WaveFreqTextView"
         android:layout_width="100dp"
-        android:layout_height="30dp"
+        android:layout_height="0dp"
         android:text="Frequency"
         android:textSize="15dp"
         android:layout_below="@id/TextView0"
@@ -71,7 +269,7 @@
     <TextView
         android:id="@+id/WaveDutyRatioTextView"
         android:layout_width="100dp"
-        android:layout_height="30dp"
+        android:layout_height="0dp"
         android:text="Duty Ratio (%)"
         android:textSize="15dp"
         android:layout_below="@id/SearchBluetoothBtn"
@@ -83,7 +281,7 @@
     <EditText
         android:id="@+id/WaveType"
         android:layout_width="100dp"
-        android:layout_height="50dp"
+        android:layout_height="0dp"
         android:selectAllOnFocus="true"
         android:digits="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ "
         android:layout_below="@id/WaveTypeTextView"
@@ -93,7 +291,7 @@
     <EditText
         android:id="@+id/WaveFreq"
         android:layout_width="100dp"
-        android:layout_height="50dp"
+        android:layout_height="0dp"
         android:layout_toRightOf="@id/WaveType"
         android:layout_below="@+id/WaveTypeTextView"
         android:digits="0123456789.mMkKhHzZ"
@@ -104,7 +302,7 @@
     <EditText
         android:id="@+id/WaveDutyRatio"
         android:layout_width="100dp"
-        android:layout_height="50dp"
+        android:layout_height="0dp"
         android:layout_toRightOf="@id/WaveFreq"
         android:layout_below="@+id/WaveTypeTextView"
         android:digits="0123456789.%"
@@ -116,7 +314,7 @@
         android:id="@+id/SendSignalDataBtn"
         android:layout_width="100dp"
         android:layout_marginLeft="5dp"
-        android:layout_height="150dp"
+        android:layout_height="0dp"
         android:layout_below="@id/TextView0"
         android:layout_toRightOf="@id/WaveDutyRatioTextView"
         android:backgroundTint="#AFDFE5"
@@ -127,7 +325,7 @@
     <TextView
         android:id="@+id/WaveHighVoltageTextView"
         android:layout_width="100dp"
-        android:layout_height="30dp"
+        android:layout_height="0dp"
         android:layout_below="@id/WaveType"
         android:layout_marginLeft="5dp"
         android:gravity="center_vertical|left"
@@ -138,7 +336,7 @@
     <TextView
         android:id="@+id/WaveLowVoltageTextView"
         android:layout_width="100dp"
-        android:layout_height="30dp"
+        android:layout_height="0dp"
         android:layout_below="@id/WaveType"
         android:layout_toRightOf="@+id/WaveHighVoltageTextView"
         android:gravity="center_vertical|left"
@@ -149,7 +347,7 @@
     <EditText
         android:id="@+id/WaveHighVoltage"
         android:layout_width="100dp"
-        android:layout_height="50dp"
+        android:layout_height="0dp"
         android:layout_below="@+id/WaveHighVoltageTextView"
         android:digits="-0123456789.mMvV"
         android:textSize="15dp"
@@ -159,7 +357,7 @@
     <EditText
         android:id="@+id/WaveLowVoltage"
         android:layout_width="100dp"
-        android:layout_height="50dp"
+        android:layout_height="0dp"
         android:layout_toRightOf="@id/WaveHighVoltage"
         android:layout_below="@+id/WaveLowVoltageTextView"
         android:digits="-0123456789.mMvV"
@@ -170,7 +368,7 @@
     <Button
         android:id="@+id/WaveVoltageExpressionBtn"
         android:layout_width="90dp"
-        android:layout_height="60dp"
+        android:layout_height="0dp"
         android:layout_marginTop="10dp"
         android:layout_below="@id/WaveDutyRatio"
         android:layout_toRightOf="@id/WaveLowVoltageTextView"
@@ -184,7 +382,7 @@
     <TextView
         android:id="@+id/RecvDataInfo"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="0dp"
         android:text="Input Signal Information"
         android:layout_below="@id/WaveHighVoltage"
         android:gravity="center"
@@ -194,7 +392,7 @@
     <TextView
         android:id="@+id/yaxis"
         android:layout_width="match_parent"
-        android:layout_height="10dp"
+        android:layout_height="0dp"
         android:text="    Vin/mV"
         android:textSize="7dp"
         android:textStyle="bold"
@@ -205,169 +403,112 @@
         android:id="@+id/chart"
         android:layout_width="match_parent"
         android:layout_below="@id/RecvDataInfo"
-        android:layout_height="240dp" />
+        android:layout_height="0dp" />
+
+
+
+
+
+
+
+
+
+
 
     <Button android:id="@+id/button4"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:text="清除数据"
-        android:layout_below="@id/chart"
+        android:layout_below="@id/SearchBluetoothBtn"
         android:backgroundTint="#4CAF50"
         tools:ignore="MissingConstraints" />
 
-    <TextView
-        android:id="@+id/TextView3"
-        android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:text="Available Bluetooth"
-        android:layout_below="@id/button4"
-        android:gravity="center"
-        android:layout_centerHorizontal="true"
-        android:background="#AFDFE5"
-        tools:ignore="MissingConstraints" />
 
-    <ListView
-        android:id="@+id/BluetoothListView"
-        android:layout_width="match_parent"
-        android:layout_height="47dp"
-        android:layout_below="@id/TextView3"
-        android:background="#72D8EB"
-        tools:ignore="MissingConstraints" />
 
-    <Button
-        android:id="@+id/cursorSwitch"
-        android:layout_width="90dp"
-        android:layout_height="80dp"
-        android:text="Cursor"
-        android:textSize="11dp"
-        android:layout_below="@+id/BluetoothListView"
-        android:layout_marginLeft="8dp"
-        android:backgroundTint="#00BCD4"
-        tools:ignore="MissingConstraints" />
 
-    <Button
-        android:id="@+id/X1U"
-        android:layout_width="140dp"
-        android:layout_height="40dp"
-        android:text="X1 UP"
-        android:textSize="11dp"
-        android:layout_below="@+id/BluetoothListView"
-        android:layout_toRightOf="@+id/cursorSwitch"
-        android:layout_marginLeft="5dp"
-        android:backgroundTint="#AFDFE5"
-        android:textColor="@color/black"
-        tools:ignore="MissingConstraints" />
-
-    <Button
-        android:id="@+id/X1D"
-        android:layout_width="140dp"
-        android:layout_height="40dp"
-        android:text="X1 Down"
-        android:textSize="10dp"
-        android:layout_below="@+id/X1U"
-        android:layout_toRightOf="@+id/cursorSwitch"
-        android:layout_marginLeft="5dp"
-        android:backgroundTint="#AFDFE5"
-        android:textColor="@color/black"
-        tools:ignore="MissingConstraints" />
 
 <!--    <Button-->
-<!--        android:id="@+id/Y1U"-->
-<!--        android:layout_width="70dp"-->
-<!--        android:layout_height="50dp"-->
-<!--        android:text="Y1 UP"-->
+<!--        android:id="@+id/cursorSwitch"-->
+<!--        android:layout_width="90dp"-->
+<!--        android:layout_height="80dp"-->
+<!--        android:text="Cursor"-->
 <!--        android:textSize="11dp"-->
 <!--        android:layout_below="@+id/BluetoothListView"-->
-<!--        android:layout_toRightOf="@+id/X2U"-->
-<!--        android:layout_marginLeft="5dp"-->
-<!--        android:backgroundTint="#AFDFE5"-->
-<!--        android:textColor="@color/black"-->
+<!--        android:layout_marginLeft="8dp"-->
+<!--        android:backgroundTint="#00BCD4"-->
 <!--        tools:ignore="MissingConstraints" />-->
 
 <!--    <Button-->
-<!--        android:id="@+id/Y2U"-->
-<!--        android:layout_width="70dp"-->
-<!--        android:layout_height="50dp"-->
-<!--        android:text="Y2 UP"-->
+<!--        android:id="@+id/X1U"-->
+<!--        android:layout_width="140dp"-->
+<!--        android:layout_height="40dp"-->
+<!--        android:text="X1 UP"-->
 <!--        android:textSize="11dp"-->
 <!--        android:layout_below="@+id/BluetoothListView"-->
-<!--        android:layout_toRightOf="@+id/Y1U"-->
-<!--        android:layout_marginLeft="5dp"-->
-<!--        android:backgroundTint="#AFDFE5"-->
-<!--        android:textColor="@color/black"-->
-<!--        tools:ignore="MissingConstraints" />-->
-
-    <Button
-        android:id="@+id/X2U"
-        android:layout_width="140dp"
-        android:layout_height="40dp"
-        android:text="X2 Up"
-        android:textSize="11dp"
-        android:layout_below="@+id/BluetoothListView"
-        android:layout_toRightOf="@+id/X1U"
-        android:layout_marginLeft="5dp"
-        android:backgroundTint="#AFDFE5"
-        android:textColor="@color/black"
-        tools:ignore="MissingConstraints" />
-
-    <Button
-        android:id="@+id/X2D"
-        android:layout_width="140dp"
-        android:layout_height="40dp"
-        android:text="X2 Down"
-        android:textSize="10dp"
-        android:layout_below="@+id/X2U"
-        android:layout_toRightOf="@+id/X1D"
-        android:layout_marginLeft="5dp"
-        android:backgroundTint="#AFDFE5"
-        android:textColor="@color/black"
-        tools:ignore="MissingConstraints" />
-
-<!--    <Button-->
-<!--        android:id="@+id/Y1D"-->
-<!--        android:layout_width="70dp"-->
-<!--        android:layout_height="50dp"-->
-<!--        android:text="Y1 Down"-->
-<!--        android:textSize="10dp"-->
-<!--        android:layout_below="@+id/Y1U"-->
-<!--        android:layout_toRightOf="@+id/X2D"-->
+<!--        android:layout_toRightOf="@+id/cursorSwitch"-->
 <!--        android:layout_marginLeft="5dp"-->
 <!--        android:backgroundTint="#AFDFE5"-->
 <!--        android:textColor="@color/black"-->
 <!--        tools:ignore="MissingConstraints" />-->
 
 <!--    <Button-->
-<!--        android:id="@+id/Y2D"-->
-<!--        android:layout_width="70dp"-->
-<!--        android:layout_height="50dp"-->
-<!--        android:text="Y2 Down"-->
+<!--        android:id="@+id/X1D"-->
+<!--        android:layout_width="140dp"-->
+<!--        android:layout_height="40dp"-->
+<!--        android:text="X1 Down"-->
 <!--        android:textSize="10dp"-->
-<!--        android:layout_below="@+id/Y2U"-->
-<!--        android:layout_toRightOf="@+id/Y1D"-->
+<!--        android:layout_below="@+id/X1U"-->
+<!--        android:layout_toRightOf="@+id/cursorSwitch"-->
 <!--        android:layout_marginLeft="5dp"-->
 <!--        android:backgroundTint="#AFDFE5"-->
 <!--        android:textColor="@color/black"-->
 <!--        tools:ignore="MissingConstraints" />-->
 
-    <TextView
-        android:id="@+id/cursorInfo"
-        android:layout_width="match_parent"
-        android:layout_height="70dp"
-        android:text="cursor Info"
-        android:textSize="13dp"
-        android:layout_below="@id/cursorSwitch"
-        android:layout_marginLeft="5dp"
-        android:gravity="center"
-        android:layout_centerHorizontal="true"
-        android:background="#AFDFE5"
-        tools:ignore="MissingConstraints" />
+<!--    <Button-->
+<!--        android:id="@+id/X2U"-->
+<!--        android:layout_width="140dp"-->
+<!--        android:layout_height="40dp"-->
+<!--        android:text="X2 Up"-->
+<!--        android:textSize="11dp"-->
+<!--        android:layout_below="@+id/BluetoothListView"-->
+<!--        android:layout_toRightOf="@+id/X1U"-->
+<!--        android:layout_marginLeft="5dp"-->
+<!--        android:backgroundTint="#AFDFE5"-->
+<!--        android:textColor="@color/black"-->
+<!--        tools:ignore="MissingConstraints" />-->
+
+<!--    <Button-->
+<!--        android:id="@+id/X2D"-->
+<!--        android:layout_width="140dp"-->
+<!--        android:layout_height="40dp"-->
+<!--        android:text="X2 Down"-->
+<!--        android:textSize="10dp"-->
+<!--        android:layout_below="@+id/X2U"-->
+<!--        android:layout_toRightOf="@+id/X1D"-->
+<!--        android:layout_marginLeft="5dp"-->
+<!--        android:backgroundTint="#AFDFE5"-->
+<!--        android:textColor="@color/black"-->
+<!--        tools:ignore="MissingConstraints" />-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/cursorInfo"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="70dp"-->
+<!--        android:text="cursor Info"-->
+<!--        android:textSize="13dp"-->
+<!--        android:layout_below="@id/cursorSwitch"-->
+<!--        android:layout_marginLeft="5dp"-->
+<!--        android:gravity="center"-->
+<!--        android:layout_centerHorizontal="true"-->
+<!--        android:background="#AFDFE5"-->
+<!--        tools:ignore="MissingConstraints" />-->
 
     <Button
         android:id="@+id/clearChart"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="0dp"
         android:text="Clear Oscilloscope Data"
-        android:layout_below="@+id/cursorInfo"
+        android:layout_below="@+id/SearchBluetoothBtn"
         android:backgroundTint="#00BCD4"
         tools:ignore="MissingConstraints" />
 

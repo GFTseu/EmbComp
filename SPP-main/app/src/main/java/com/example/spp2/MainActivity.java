@@ -1,6 +1,5 @@
 package com.example.spp2;
 
-import static android.bluetooth.BluetoothDevice.BOND_BONDED;
 import static android.bluetooth.BluetoothDevice.BOND_BONDING;
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 
@@ -9,8 +8,6 @@ import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -20,7 +17,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,30 +27,28 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+
 
 import com.github.mikephil.charting.charts.LineChart;
 
-import java.io.BufferedInputStream;
+import org.w3c.dom.Text;
+
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.RoundingMode;
-import java.security.interfaces.RSAKey;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
@@ -75,25 +69,27 @@ public class MainActivity extends AppCompatActivity {
     private LineChart mLineChart;
     private LineChartUtil mLineChartUtil;
 
-    private  TextView textRecvDataInfo;
-    private  TextView textSendWaveType;
-    private  TextView textSendWaveFreq;
-    private  TextView textSendWaveDutyRatio;
-    private  TextView textSendWaveHighVoltage;
-    private  TextView textSendWaveLowVoltage;
-    private  TextView textSendWaveHighVoltageTextView;
-    private  TextView textSendWaveLowVoltageTextView;
-    private  ListView BlueToothListView;
 
     public static ArrayList list = new ArrayList();
-    public static float[] RecvDataVoltageFloat = new float[2000];
     public static Map map1 = new HashMap<String, String>();
     public static Map VolCntMap = new HashMap();
     public static boolean fakeMode = true;
     public static ArrayList limitLineList = new ArrayList<>();
-    public static boolean cursorVisible = false;
     public static Double unitTime;
-    public static ArrayList chartDataArray = new ArrayList<>();
+
+    public EditText forwardGeValue;
+    public EditText backGeValue;
+    public Spinner forwardGeSpinner;
+    public Spinner backGeSpinner;
+    public String currentForwardGeSpinnerString;
+    public String currentBackGeSpinnerString;
+    public TextView currentStepFrequency;
+    public TextView currentVelocity;
+
+
+    Integer[] forwardGeValueStored = {0, 0, 0};
+    Integer[] backGeValueStored = {0, 0, 0, 0, 0, 0, 0, 0};
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,13 +102,14 @@ public class MainActivity extends AppCompatActivity {
         Button bt2 = (Button) findViewById(R.id.button2);
         Button bt3 = (Button) findViewById(R.id.SendSignalDataBtn);
         Button bt4 = (Button) findViewById(R.id.button4);
-        Button voltageExpressionChange = (Button) findViewById(R.id.WaveVoltageExpressionBtn);
-        Button clearChart = (Button) findViewById(R.id.clearChart);
-        Button cursor = (Button) findViewById(R.id.cursorSwitch);
-        Button x1u = (Button) findViewById(R.id.X1U);
-        Button x2u = (Button) findViewById(R.id.X2U);
-        Button x1d = (Button) findViewById(R.id.X1D);
-        Button x2d = (Button) findViewById(R.id.X2D);
+
+        Button forwardGeParamDec = (Button) findViewById(R.id.forwardGeParamDec);
+        Button forwardGeParamInc = (Button) findViewById(R.id.forwardGeParamInc);
+        Button backGeParamDec = (Button) findViewById(R.id.backGeParamDec);
+        Button backGeParamInc = (Button) findViewById(R.id.backGeParamInc);
+        Button forwardGeParams = (Button) findViewById(R.id.forwardGeParams);
+        Button backGeParams = (Button) findViewById(R.id.backGeParams);
+
         mLineChart = findViewById(R.id.chart);
         mLineChartUtil = new LineChartUtil(mLineChart);
 
@@ -123,28 +120,27 @@ public class MainActivity extends AppCompatActivity {
         //新建一个监视器类对象
         MyClickListener mcl = new MyClickListener();
         //button注册监视器
+        forwardGeParams.setOnClickListener(mcl);
+        backGeParams.setOnClickListener(mcl);
+        forwardGeParamDec.setOnClickListener(mcl);
+        forwardGeParamInc.setOnClickListener(mcl);
+        backGeParamDec.setOnClickListener(mcl);
+        backGeParamInc.setOnClickListener(mcl);
+
         bt0.setOnClickListener(mcl);
         bt1.setOnClickListener(mcl);
         bt2.setOnClickListener(mcl);
         bt3.setOnClickListener(mcl);
         bt4.setOnClickListener(mcl);
-        voltageExpressionChange.setOnClickListener(mcl);
-        clearChart.setOnClickListener(mcl);
-        cursor.setOnClickListener(mcl);
-        x1u.setOnClickListener(mcl);
-        x2u.setOnClickListener(mcl);
-        x1d.setOnClickListener(mcl);
-        x2d.setOnClickListener(mcl);
 
-        textRecvDataInfo = (TextView) findViewById(R.id.RecvDataInfo);
-        textSendWaveType = (TextView) findViewById(R.id.WaveType);
-        textSendWaveFreq = (TextView) findViewById(R.id.WaveFreq);
-        textSendWaveDutyRatio = (TextView) findViewById(R.id.WaveDutyRatio);
-        textSendWaveHighVoltage = (TextView) findViewById(R.id.WaveHighVoltage);
-        textSendWaveLowVoltage = (TextView) findViewById(R.id.WaveLowVoltage);
-        textSendWaveHighVoltageTextView = (TextView) findViewById(R.id.WaveHighVoltageTextView);
-        textSendWaveLowVoltageTextView = (TextView) findViewById(R.id.WaveLowVoltageTextView);
-        BlueToothListView = (ListView) findViewById(R.id.BluetoothListView);
+        forwardGeValue = (EditText) findViewById(R.id.forwardGeValue);
+        backGeValue = (EditText) findViewById(R.id.backGeValue);
+        forwardGeSpinner = (Spinner) findViewById(R.id.forwardGeSpinner);
+        backGeSpinner = (Spinner) findViewById(R.id.backGeSpinner);
+        forwardGeSpinner.setOnItemSelectedListener(new forwardSpinnerOnItemSelectedListener());
+        backGeSpinner.setOnItemSelectedListener(new backSpinnerOnItemSelectedListener());
+        currentStepFrequency = (TextView) findViewById(R.id.currentStepFreqency);
+        currentVelocity = (TextView) findViewById(R.id.currentVelocity);
 
         map1.put("Cnt","0");
         VolCntMap.put("VolCnt","0");
@@ -155,190 +151,22 @@ public class MainActivity extends AppCompatActivity {
 
 
         handler = new Handler(Looper.getMainLooper()) {
+            @SuppressLint("SetTextI18n")
             @Override
             public void handleMessage(Message msg) {
                 if (msg.what == 0) { // 接收到Socket数据消息
-
-                    if (RecvDataVoltageFloat[1]!=0||RecvDataVoltageFloat[2]!=0||RecvDataVoltageFloat[3]!=0||RecvDataVoltageFloat[4]!=0||RecvDataVoltageFloat[5]!=0||RecvDataVoltageFloat[10]!=0||RecvDataVoltageFloat[20]!=0) {
-                        runOnUiThread(() -> {
-                            try {
-                                mLineChartUtil = new LineChartUtil(mLineChart);
-                                mLineChartUtil.refresh();
-                                mLineChartUtil.initLineChart(new ArrayList());
-                                mLineChartUtil.initLineChartData();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        });
-                        map1.clear();
-                        map1.put("Cnt", "0");
-                        VolCntMap.clear();
-                        VolCntMap.put("VolCnt", "0");
-                        list.clear();
-                        limitLineList.clear();
-                        textRecvDataInfo.setText("");
-                        for (int i = 0; i < RecvDataVoltageFloat.length; i++) {
-                            RecvDataVoltageFloat[i] = 0f;
-                        }
-                    }
-
                     String RecvDataString = (String) msg.obj;
-//                    RecvDataString = RecvDataString.substring(0, RecvDataString.length()-8);
-
-                    //RecvDataString 解析
-                    String[] RecvDataStringArray = RecvDataString.split("y");
-//                    String RecvDataPeriString = (RecvDataStringArray[0]).substring(2);
-                    String RecvDataPeriClkCntString = RecvDataStringArray[0];
-                    int RecvVolCnt = RecvDataStringArray.length - 1;
-                    System.out.println(RecvVolCnt);
-
-                    // 接收的数据中电平信息个数
-                    int RecvDataVolNum = RecvDataStringArray.length;
-                    if (VolCntMap.isEmpty()) VolCntMap.put("VolCnt","0");
-                    VolCntMap.put("VolCnt", String.valueOf(Integer.parseInt((String) VolCntMap.get("VolCnt")) + RecvDataVolNum));
-
-                    Integer RecvDataPeriClkCntInt = Integer.parseInt(RecvDataPeriClkCntString,16);
-                    Double RecvDataPeriClkCntDouble = Double.valueOf(RecvDataPeriClkCntInt);
-                    Double RecvDataPeriDouble;
-
-                    // 展示频率、周期数据
-                    NumberFormat nf1 = NumberFormat.getNumberInstance();
-                    nf1.setMaximumFractionDigits(2);
-                    nf1.setRoundingMode(RoundingMode.HALF_UP);
-                    NumberFormat nf3 = NumberFormat.getNumberInstance();
-                    nf3.setMaximumFractionDigits(3);
-                    nf3.setRoundingMode(RoundingMode.HALF_UP);
-                    Double freqDisplay;
-                    String freqDisplayString;
-                    String periDisplayString;
-                    String tempPreiString;
-                    boolean unitTimeDouble = false;
-
-                    RecvDataPeriClkCntDouble *= 4;
-                    if (RecvDataPeriClkCntDouble <= 100) unitTimeDouble = true;
-                    System.out.println(unitTimeDouble+"ooooooooooooooooooooooooooooooooooooooooooooooooooooo");
-
-                    if (RecvDataPeriClkCntDouble < 50) {
-                        RecvDataPeriDouble = RecvDataPeriClkCntDouble * 20;
-                        freqDisplay = 1000.0/RecvDataPeriDouble;
-                        freqDisplayString = "Frequency: " + String.valueOf(nf1.format(freqDisplay)) + "MHz";
-                        tempPreiString = String.valueOf(RecvDataPeriDouble);
-                        if (tempPreiString.length() > 7) tempPreiString = tempPreiString.substring(0, 6);
-                        periDisplayString = ";  Period: " + tempPreiString + "ns";
-                        unitTime = RecvDataPeriDouble / RecvVolCnt;
-                        if (unitTimeDouble) unitTime *= 2;
-                        list.add(nf3.format(unitTime));
-                        list.add("ns");
-                    } else {
-                        RecvDataPeriClkCntDouble /= 1000;
-                        if (RecvDataPeriClkCntDouble < 50) {
-                            RecvDataPeriDouble = RecvDataPeriClkCntDouble * 20;
-                            freqDisplay = 1000.0 / RecvDataPeriDouble;
-                            freqDisplayString = "Frequency: " + String.valueOf(nf1.format(freqDisplay)) + "kHz";
-                            tempPreiString = String.valueOf(RecvDataPeriDouble);
-                            if (tempPreiString.length() > 7) tempPreiString = tempPreiString.substring(0, 6);
-                            periDisplayString = ";  Period: " + tempPreiString + "us";
-                            unitTime = RecvDataPeriDouble / RecvVolCnt;
-                            if (unitTimeDouble) unitTime *= 2;
-                            list.add(nf3.format(unitTime));
-                            list.add("us");
-                        } else {
-                            RecvDataPeriClkCntDouble /= 1000;
-                            if (RecvDataPeriClkCntDouble < 50) {
-                                RecvDataPeriDouble = RecvDataPeriClkCntDouble * 20;
-                                freqDisplay = 1000.0 / RecvDataPeriDouble;
-                                freqDisplayString = "Frequency: " + String.valueOf(nf1.format(freqDisplay)) + "Hz";
-                                tempPreiString = String.valueOf(RecvDataPeriDouble);
-                                if (tempPreiString.length() > 7) tempPreiString = tempPreiString.substring(0, 6);
-                                periDisplayString = ";  Period: " + tempPreiString + "ms";
-                                unitTime = RecvDataPeriDouble / RecvVolCnt;
-                                list.add(nf3.format(unitTime));
-                                list.add("ms");
-                            } else {
-                                RecvDataPeriClkCntDouble /= 1000;
-                                RecvDataPeriDouble = RecvDataPeriClkCntDouble * 20;
-                                freqDisplay = 1000.0 / RecvDataPeriDouble;
-                                freqDisplayString = "Frequency: " + String.valueOf(nf1.format(freqDisplay)) + "mHz";
-                                tempPreiString = String.valueOf(RecvDataPeriDouble);
-                                if (tempPreiString.length() > 7) tempPreiString = tempPreiString.substring(0, 6);
-                                periDisplayString = ";  Period: " + tempPreiString + "ss";
-                                unitTime = RecvDataPeriDouble / RecvVolCnt;
-                                list.add(nf3.format(unitTime));
-                                list.add("s");
-
-                            }
-                        }
-                    }
-
-                    // 解析各点数据
-                    for (int i = 0; i < RecvDataVolNum-1; i++) {
-                        String RecvValueString = RecvDataStringArray[i+1];
-                        Integer currentValueDataInt = Integer.parseInt(RecvValueString,16);
-                        float currentValue = (float) ((5000 - currentValueDataInt/0.4096));
-                        if (currentValue < 4900 && -4900 < currentValue) {
-                            String currentValueString = String.valueOf(currentValue);
-                            System.out.println(currentValue);
-                            int dotIndex = currentValueString.indexOf(".");
-                            if ((currentValueString.length() - dotIndex) >= 4) {
-                                currentValueString = currentValueString.substring(0, dotIndex + 3);
-                                currentValue = Float.parseFloat(currentValueString);
-                            }
-                            if (map1.isEmpty()) map1.put("Cnt", "0");
-                            int currentIndex = Integer.parseInt((String) map1.get("Cnt"));
-                            RecvDataVoltageFloat[currentIndex] = currentValue;
-                            currentIndex++;
-                            map1.put("Cnt", (String.valueOf(currentIndex)));
-
-                            // 在UI线程更新数据到RefreshView组件，例如：
-                            float finalCurrentValue = currentValue;
-                            runOnUiThread(() -> {
-
-                                try {
-                                    mLineChartUtil.addEntry(finalCurrentValue, list, chartDataArray);
-                                } catch (Exception e) {
-                                    Log.w("MainActivity", "格式化数值失败 dataUI");
-                                }
-
-                                // 更新RefreshView组件的逻辑代码...
-                                // 例如，刷新RefreshView的数据源或调用某种刷新动画等。
-                            });
-                        }
-                    }
-
-                    // 显示最大最小值
-                    float maxV = 0, minV = 0;
-                    for (int i = 0; i < (Integer.parseInt((String) map1.get("Cnt"))); i++) {
-                        if (maxV < RecvDataVoltageFloat[i]) maxV = RecvDataVoltageFloat[i];
-                        if (minV > RecvDataVoltageFloat[i]) minV = RecvDataVoltageFloat[i];
-                    }
-                    String volString = "Vmax: " + maxV + "mV;  Vmin: " + minV + "mV";
-                    textRecvDataInfo.setText(freqDisplayString + periDisplayString + "\n" + volString);
-
-                    // 再把波形重复4遍
-                    for (int iter = 0; iter < 4; iter ++) {
-                        for (int i = 0; i < RecvDataVolNum-2; i++) {
-                            String RecvValueString = RecvDataStringArray[i + 1];
-                            Integer currentValueDataInt = Integer.parseInt(RecvValueString, 16);
-                            float currentValue = (float) (5000 - currentValueDataInt / 0.4096);
-                            String currentValueString = String.valueOf(currentValue);
-                            int dotIndex = currentValueString.indexOf(".");
-                            if ((currentValueString.length() - dotIndex) >= 4) {
-                                currentValueString = currentValueString.substring(0, dotIndex + 3);
-                                currentValue = Float.parseFloat(currentValueString);
-                            }
-                            float finalCurrentValue = currentValue;
-                            runOnUiThread(() -> {
-                                try {
-                                    mLineChartUtil.addEntry(finalCurrentValue, list, chartDataArray);
-                                } catch (Exception e) {
-                                    Log.w("MainActivity", "格式化数值失败 dataUI");
-                                }
-                            });
-                        }
+                    if (RecvDataString.charAt(1) == '0') {
+                        String[] RecvDataStringArray = RecvDataString.split("y");
+                        Integer currentStepFrequencyValue = Integer.parseInt(RecvDataStringArray[1]);
+                        Integer currentVelocityValue = Integer.parseInt(RecvDataStringArray[2]);
+                        currentStepFrequency.setText("当前踏频："+ currentStepFrequencyValue + "次/分钟");
+                        currentVelocity.setText("当前车速：" + currentVelocityValue + "km/h");
                     }
 
 
-                } else { // 处理其他消息... }
+
+                } else {
                     super.handleMessage(msg);
                 }
             };
@@ -424,114 +252,46 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-//    private class MyAsyncTask extends AsyncTask<Void, Void, String> {
-//        @SuppressLint("WrongThread")
-//        @Override
-//        protected String doInBackground(Void... params) {
-//            // 在这里执行耗时的操作，例如网络请求
-//            String msg =  CommonValue.getInstance().getData().poll();
-//
-//            onPostExecute(msg);
-//            return msg;
-//        }
-//
-//        @Override
-//        protected void onPostExecute(String result) {
-//            if(result!=null) {
-//                //待改造 解析 分段解析   02130000000032001900......
-//                //此处直接转数值 做demo
-//                float value = (float) (Float.parseFloat(result));
-//                Log.w("MainActivity", "xxxxxxxx dataUI" + value);
-//
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        mLineChartUtil.addEntry(value);
-//                        textRecvDataInfo.setText(textRecvDataInfo.getText()+"\n"+value);
-//                    }
-//                });
-//
-//
-//            }
-//        }
-//    }
+    private class forwardSpinnerOnItemSelectedListener implements OnItemSelectedListener{
+        @Override
+        public void onItemSelected(AdapterView<?> adapter,View view,int position,long id) {
+            currentForwardGeSpinnerString = adapter.getItemAtPosition(position).toString();
+            forwardGeValue.setText(forwardGeValueStored[Integer.parseInt(currentForwardGeSpinnerString.substring(2))-1].toString());
+        }
 
+        @Override
+        public void onNothingSelected(AdapterView<?> arg0) {}
+    }
+
+    private class backSpinnerOnItemSelectedListener implements OnItemSelectedListener{
+        @Override
+        public void onItemSelected(AdapterView<?> adapter,View view,int position,long id) {
+            currentBackGeSpinnerString = adapter.getItemAtPosition(position).toString();
+            backGeValue.setText(backGeValueStored[Integer.parseInt(currentBackGeSpinnerString.substring(2))-1].toString());
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> arg0) {}
+    }
+
+    public void btGeValueSend() {
+        String s = "B0";
+        for (int i: forwardGeValueStored) s += (String.format("%02d", i+50));
+        s += ("b");
+        for (int i: backGeValueStored) s += (String.format("%02d", i+50));
+        s += ("E\n");
+        try {
+            bluetoothSocket.getOutputStream().write(s.getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     //重写button点击事件
     class MyClickListener implements View.OnClickListener {
 
         boolean isConnected = false;
         TextView textView = (TextView)findViewById(R.id.TextView0);
-        TextView cursortextView = (TextView) findViewById(R.id.cursorInfo);
-
-        public void showCursorInfo(Float currX1, Float currX2) {
-            if (!MainActivity.cursorVisible) {
-                cursortextView.setText("Cursor Off");
-                return;
-            }
-            NumberFormat nf5 = NumberFormat.getNumberInstance();
-            nf5.setMaximumFractionDigits(4);
-            nf5.setRoundingMode(RoundingMode.HALF_UP);
-            Float deltaX21 = currX2 - currX1;
-            Float y1 = (Float) MainActivity.chartDataArray.get((int) ((float) currX1));
-            Float y2 = (Float) MainActivity.chartDataArray.get((int) ((float) currX2));
-            Float deltaY21 = y2 - y1;
-            String timeScale;
-            if (!list.isEmpty()) timeScale = (String) list.get(1);
-            else timeScale = "ns";
-            String dispTimeScale = timeScale;
-            String currX1timeScale = timeScale;
-            String currX2timeScale = timeScale;
-
-            if (unitTime==0) unitTime = 15.2091408;
-            deltaX21 *= Float.parseFloat(String.valueOf(unitTime));
-            currX1 *= Float.parseFloat(String.valueOf(unitTime));
-            currX2 *= Float.parseFloat(String.valueOf(unitTime));
-
-            if (deltaX21 >= 1000 && !dispTimeScale.equals("s")) {
-                deltaX21 /= 1000;
-                if (dispTimeScale.equals("ns")) dispTimeScale = "us";
-                else if (dispTimeScale.equals("us")) dispTimeScale = "ms";
-                else if (dispTimeScale.equals("ms")) dispTimeScale = "s";
-
-                if (deltaX21 >= 1000) {
-                    deltaX21 /= 1000;
-                    if (dispTimeScale.equals("us")) dispTimeScale = "ms";
-                    else if (dispTimeScale.equals("ms")) dispTimeScale = "s";
-                }
-            }
-
-            if (currX1 >= 1000 && !currX1timeScale.equals("s")) {
-                currX1 /= 1000;
-                if (currX1timeScale.equals("ns")) currX1timeScale = "us";
-                else if (currX1timeScale.equals("us")) currX1timeScale = "ms";
-                else if (currX1timeScale.equals("ms")) currX1timeScale = "s";
-
-                if (currX1 >= 1000) {
-                    currX1 /= 1000;
-                    if (currX1timeScale.equals("us")) currX1timeScale = "ms";
-                    else if (currX1timeScale.equals("ms")) currX1timeScale = "s";
-                }
-            }
-
-            if (currX2 >= 1000 && !currX2timeScale.equals("s")) {
-                currX2 /= 1000;
-                if (currX2timeScale.equals("ns")) currX2timeScale = "us";
-                else if (currX2timeScale.equals("us")) currX2timeScale = "ms";
-                else if (currX2timeScale.equals("ms")) currX2timeScale = "s";
-
-                if (currX2 >= 1000) {
-                    currX2 /= 1000;
-                    if (currX2timeScale.equals("us")) currX2timeScale = "ms";
-                    else if (currX2timeScale.equals("ms")) currX2timeScale = "s";
-                }
-            }
-
-            String line1 = "X1: " + nf5.format(currX1) + currX1timeScale + ";  Y1: " + y1 + "mV";
-            String line2 = "X2: " + nf5.format(currX1) + currX2timeScale + ";  Y2: " + y2 + "mV";
-            String line3 = "\u0394X = X2 - X1 = " + nf5.format(deltaX21) + dispTimeScale + ";  \u0394Y = Y2 - Y1 = " + deltaY21 + "mV";
-            cursortextView.setText(line1 + ";  " + line2 + "\n" + line3);
-        }
 
         @Override
         public void onClick(View v) {
@@ -539,11 +299,10 @@ public class MainActivity extends AppCompatActivity {
                 limitLineList.add(0f);
                 limitLineList.add(0f);
             }
-            Float currX1 = (Float) limitLineList.get(0);
-            Float currX2 = (Float) limitLineList.get(1);
-            Float highVisX = mLineChartUtil.getHighVisX();
-            Float lowVisX = mLineChartUtil.getLowVisX();
-            Float deltaX = highVisX - lowVisX;
+
+            String commandBack1 = "B1E\n";
+            int currentForwardGeValue;
+            int currentBackGeValue;
 
             switch (v.getId()) {
                 case R.id.SearchBluetoothBtn:
@@ -552,190 +311,54 @@ public class MainActivity extends AppCompatActivity {
                     blueToothController.findDevice();
                     MainActivity.fakeMode = (!MainActivity.fakeMode);
                     break;
-                case R.id.SendSignalDataBtn:
+                case R.id.forwardGeParams: case R.id.backGeParams:
                     try {
-                        String sendDataLegal = "1";   // 有效标志，1表示此次数据有效
-                        String sendDataWaveType = textSendWaveType.getText().toString();
-                        String sendDataWaveFreq = textSendWaveFreq.getText().toString();
-                        String sendDataWaveDutyRatio = textSendWaveDutyRatio.getText().toString();
-                        String sendDataWaveHighVoltage = textSendWaveHighVoltage.getText().toString();
-                        String sendDataWaveLowVoltage = textSendWaveLowVoltage.getText().toString();
-
-
-                        // WaveType
-                        if (sendDataWaveType.equals("")) sendDataWaveType = "0";
-                        if (sendDataWaveType.equals("sine") || sendDataWaveType.equals("Sine")) sendDataWaveType = "0";
-                        else if (sendDataWaveType.equals("rec") || sendDataWaveType.equals("Rec")) sendDataWaveType = "1";
-                        else if (sendDataWaveType.equals("tri") || sendDataWaveType.equals("Tri")) sendDataWaveType = "2";
-                        else if (sendDataWaveType.equals("const") || sendDataWaveType.equals("Const")) sendDataWaveType = "3";
-                        else {
-                            sendDataLegal = "0";
-                            sendDataWaveType = "";
-                        }
-
-                        // WaveFreq
-                        if (sendDataWaveFreq.equals("")) {
-                            sendDataWaveFreq = "000001000";  // 1kHz
-                        } else {
-                            String sendDataWaveFreqDataString = "";
-                            // 频率的数据位
-                            Double sendDataWaveFreqDataDouble;
-                            // 频率的数量级
-                            char sendDataWaveFreqMagnitudeLevel = sendDataWaveFreq.charAt(sendDataWaveFreq.length() - 3);
-                            if (sendDataWaveFreqMagnitudeLevel == 'k' || sendDataWaveFreqMagnitudeLevel == 'K') {
-                                sendDataWaveFreqDataString = sendDataWaveFreq.substring(0, sendDataWaveFreq.length()-3);
-                                sendDataWaveFreqDataDouble = Double.parseDouble(sendDataWaveFreqDataString);
-                                sendDataWaveFreqDataDouble *= 1000;
-                            } else if (sendDataWaveFreqMagnitudeLevel == 'm' || sendDataWaveFreqMagnitudeLevel == 'M') {
-                                sendDataWaveFreqDataString = sendDataWaveFreq.substring(0, sendDataWaveFreq.length()-3);
-                                sendDataWaveFreqDataDouble = Double.parseDouble(sendDataWaveFreqDataString);
-                                sendDataWaveFreqDataDouble *= 1000000;
-                            } else {
-                                sendDataWaveFreqDataString = sendDataWaveFreq.substring(0, sendDataWaveFreq.length()-2);
-                                sendDataWaveFreqDataDouble = Double.parseDouble(sendDataWaveFreqDataString);
-                            }
-                            // 数据位乘1000后传输
-                            int sendDataWaveFreqTempInt = (int) (sendDataWaveFreqDataDouble * 1.0);
-                            sendDataWaveFreq = String.format("%09d", sendDataWaveFreqTempInt);
-                        }
-
-
-                        // WaveDutyRatio
-                        // 占空比仅当波形为矩形波或三角波时才有效
-                        if (sendDataWaveType.equals("1") || sendDataWaveType.equals("2")) {
-                            if (sendDataWaveDutyRatio.equals("")) {
-                                sendDataWaveDutyRatio = "050000";
-                            } else {
-                                Double sendDataWaveDutyRatioDataDouble = Double.valueOf(sendDataWaveDutyRatio);
-                                int sendDataWaveDutyRatioDataInt = (int) (sendDataWaveDutyRatioDataDouble * 1000);
-                                sendDataWaveDutyRatio = String.format("%06d", sendDataWaveDutyRatioDataInt);
-                            }
-                        } else {
-                            if (!sendDataWaveDutyRatio.equals("")) {
-                                Toast.makeText(getApplicationContext(), "ILLEGAL INPUT! Duty Ratio Unavailable", Toast.LENGTH_LONG).show();
-                                sendDataWaveDutyRatio = "000000";
-                                sendDataLegal = "0";  // 信号有效标志置为0
-                            } else {
-                                sendDataWaveDutyRatio = "";
-                            }
-                        }
-
-
-                        // High Voltage and Low Voltage
-                        // 分别用6位传输，第一位为符号位，后五位为数据*10000
-                        String sendDataVoltageExpression = "0";  // 高低电平表示法
-                        if (textSendWaveHighVoltageTextView.getText().equals("High Voltage")) {
-                            sendDataVoltageExpression = "0";  // 高低电平表示法
-                        } else if (textSendWaveHighVoltageTextView.getText().equals("VPP")) {
-                            sendDataVoltageExpression = "1";  // VPP-Offset表示法
-                        }
-
-                        // 默认情况
-                        if (sendDataWaveHighVoltage.equals("") && sendDataWaveLowVoltage.equals("")) {
-                            sendDataWaveHighVoltage = "6000000";  // 默认高1V
-                            sendDataWaveLowVoltage = "4000000";  // 默认低-1V
-                        }
-
-                        else if (!sendDataWaveHighVoltage.equals("") && !sendDataWaveLowVoltage.equals("")) {
-                            String sendDataWaveHighVoltageDataString;
-                            String sendDataWaveLowVoltageDataString;
-                            Double sendDataWaveHighVoltageDataDouble;
-                            Double sendDataWaveLowVoltageDataDouble;
-                            int sendDataWaveHighVoltageDataInt;
-                            int sendDataWaveLowVoltageDataInt;
-                            char sendDataWaveHighVoltageMagnitudeLevel = sendDataWaveHighVoltage.charAt(sendDataWaveHighVoltage.length() - 2);
-                            char sendDataWaveLowVoltageMagnitudeLevel = sendDataWaveLowVoltage.charAt(sendDataWaveLowVoltage.length() - 2);
-
-                            // 高电平数据解析
-                            if (sendDataWaveHighVoltageMagnitudeLevel == 'm' || sendDataWaveHighVoltageMagnitudeLevel == 'M') {
-                                sendDataWaveHighVoltageDataString = sendDataWaveHighVoltage.substring(0, sendDataWaveHighVoltage.length()-2);
-                                sendDataWaveHighVoltageDataDouble = Double.parseDouble(sendDataWaveHighVoltageDataString);
-                                // 单位转化为 V
-                                sendDataWaveHighVoltageDataDouble /= 1000;
-                            } else {
-                                sendDataWaveHighVoltageDataString = sendDataWaveHighVoltage.substring(0, sendDataWaveHighVoltage.length()-1);
-                                sendDataWaveHighVoltageDataDouble = Double.parseDouble(sendDataWaveHighVoltageDataString);
-                            }
-
-                            // 低电平数据解析
-                            if (sendDataWaveLowVoltageMagnitudeLevel == 'm' || sendDataWaveLowVoltageMagnitudeLevel == 'M') {
-                                sendDataWaveLowVoltageDataString = sendDataWaveLowVoltage.substring(0, sendDataWaveLowVoltage.length()-2);
-                                sendDataWaveLowVoltageDataDouble = Double.parseDouble(sendDataWaveLowVoltageDataString);
-                                // 单位转化为 V
-                                sendDataWaveLowVoltageDataDouble /= 1000;
-                            } else {
-                                sendDataWaveLowVoltageDataString = sendDataWaveLowVoltage.substring(0, sendDataWaveLowVoltage.length()-1);
-                                sendDataWaveLowVoltageDataDouble = Double.parseDouble(sendDataWaveLowVoltageDataString);
-                            }
-
-                            System.out.println("sendDataWaveLowVoltageDouble:              " + sendDataWaveLowVoltageDataDouble);
-
-                            // VPP模式数据有效检验
-                            if (sendDataVoltageExpression.equals("1")) {
-                                if (sendDataWaveHighVoltageDataDouble < 0) {
-                                    // VPP小于0，数据无效
-                                    sendDataLegal = "0";
-                                    Toast.makeText(getApplicationContext(), "ILLEGAL INPUT! VPP should varies from 0 to 6V", Toast.LENGTH_LONG).show();
-                                }
-                                if (sendDataWaveLowVoltageDataDouble > 3 || sendDataWaveLowVoltageDataDouble < -3) {
-                                    // abs(offset)大于3V，数据无效
-                                    sendDataLegal = "0";
-                                    Toast.makeText(getApplicationContext(), "ILLEGAL INPUT! Offset should varies from -3V to 3V", Toast.LENGTH_LONG).show();
-                                }
-                                Double tmpHighDataDouble = sendDataWaveLowVoltageDataDouble + sendDataWaveHighVoltageDataDouble/2;
-                                Double tmpLowDataDouble = sendDataWaveLowVoltageDataDouble - sendDataWaveHighVoltageDataDouble/2;
-                                sendDataWaveHighVoltageDataDouble = tmpHighDataDouble;
-                                sendDataWaveLowVoltageDataDouble = tmpLowDataDouble;
-                            }
-
-                            // 高低电平模式数据有效检验，如果为VPP模式，同样需要检验
-                            if (sendDataWaveHighVoltageDataDouble > 3 || sendDataWaveHighVoltageDataDouble < -3 || sendDataWaveLowVoltageDataDouble > 3 || sendDataWaveLowVoltageDataDouble < -3 ) {
-                                sendDataLegal = "0";
-                                Toast.makeText(getApplicationContext(), "ILLEGAL INPUT! Voltage should varies from -3 to 3V", Toast.LENGTH_LONG).show();
-                            }
-                            if (sendDataWaveHighVoltageDataDouble < sendDataWaveLowVoltageDataDouble) {
-                                sendDataLegal = "0";
-                                Toast.makeText(getApplicationContext(), "ILLEGAL INPUT! Low Voltage exceeds High Voltage", Toast.LENGTH_LONG).show();
-                            }
-                            System.out.println("sendDataWaveLowVoltageDouble:              " + sendDataWaveLowVoltageDataDouble);
-
-                            sendDataWaveHighVoltageDataInt = (int) (1000000*(sendDataWaveHighVoltageDataDouble+5));
-                            sendDataWaveLowVoltageDataInt = (int) (1000000*(sendDataWaveLowVoltageDataDouble+5));
-                            System.out.println("sendDataWaveLowVoltageInt:              " + sendDataWaveLowVoltageDataInt);
-
-                            sendDataWaveHighVoltage = String.format("%07d", sendDataWaveHighVoltageDataInt);
-                            sendDataWaveLowVoltage = String.format("%07d", sendDataWaveLowVoltageDataInt);
-
-                        } else {
-                            if (sendDataVoltageExpression.equals("0")) {
-                                // 高低电平有一个没设置，数据无效
-                                sendDataLegal = "0";
-                                sendDataWaveHighVoltage = "";
-                                sendDataWaveLowVoltage = "";
-                                Toast.makeText(getApplicationContext(), "Both High and Low Voltage should be clarified", Toast.LENGTH_LONG).show();
-                            } else if (sendDataVoltageExpression.equals("1")) {
-                                // VPP或Offset没设置，数据无效
-                                sendDataLegal = "0";
-                                sendDataWaveHighVoltage = "";
-                                sendDataWaveLowVoltage = "";
-                                Toast.makeText(getApplicationContext(), "Both VPP and Offset should be clarified", Toast.LENGTH_LONG).show();
-                            }
-                        }
-
-
-
-
-
-
-                        // 蓝牙传DAC数据采用PQ协议
-                        String sendDataString = "P" + sendDataLegal + "t" + sendDataWaveType + "f" + sendDataWaveFreq + "d" + sendDataWaveDutyRatio + "e" + sendDataVoltageExpression + "h" + sendDataWaveHighVoltage + "l" + sendDataWaveLowVoltage + "Q";
-                        byte[] sendData = sendDataString.getBytes();
-                        Log.w("MainActivity", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx data send");
-                        bluetoothSocket.getOutputStream().write(sendData);
+                        bluetoothSocket.getOutputStream().write(commandBack1.getBytes());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                     break;
+                case R.id.forwardGeParamDec:
+                    // 修改档位数值
+                    currentForwardGeValue = Integer.parseInt(forwardGeValue.getText().toString());
+                    currentForwardGeValue -= 1;
+                    // 将结果存到数组
+                    forwardGeValueStored[Integer.parseInt(currentForwardGeSpinnerString.substring(2))-1] = currentForwardGeValue;
+                    // 显示结果
+                    forwardGeValue.setText(String.valueOf(currentForwardGeValue));
+                    btGeValueSend();
+                    break;
+                case R.id.forwardGeParamInc:
+                    // 修改档位数值
+                    currentForwardGeValue = Integer.parseInt(forwardGeValue.getText().toString());
+                    currentForwardGeValue += 1;
+                    // 将结果存到数组
+                    forwardGeValueStored[Integer.parseInt(currentForwardGeSpinnerString.substring(2))-1] = currentForwardGeValue;
+                    // 显示结果
+                    forwardGeValue.setText(String.valueOf(currentForwardGeValue));
+                    btGeValueSend();
+                    break;
+                case R.id.backGeParamDec:
+                    // 修改档位数值
+                    currentBackGeValue = Integer.parseInt(backGeValue.getText().toString());
+                    currentBackGeValue -= 1;
+                    // 将结果存到数组
+                    backGeValueStored[Integer.parseInt(currentBackGeSpinnerString.substring(2))-1] = currentBackGeValue;
+                    // 显示结果
+                    backGeValue.setText(String.valueOf(currentBackGeValue));
+                    btGeValueSend();
+                    break;
+                case R.id.backGeParamInc:
+                    // 修改档位数值
+                    currentBackGeValue = Integer.parseInt(backGeValue.getText().toString());
+                    currentBackGeValue += 1;
+                    // 将结果存到数组
+                    backGeValueStored[Integer.parseInt(currentBackGeSpinnerString.substring(2))-1] = currentBackGeValue;
+                    // 显示结果
+                    backGeValue.setText(String.valueOf(currentBackGeValue));
+                    btGeValueSend();
+                    break;
+
                 case R.id.button1:
                     if (ActivityCompat.checkSelfPermission(instance, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                         // TODO: Consider calling
@@ -777,206 +400,6 @@ public class MainActivity extends AppCompatActivity {
                         } catch (IllegalAccessException | IOException e) {
                             throw new RuntimeException(e);
                         }
-                    }
-                    break;
-                case R.id.WaveVoltageExpressionBtn:
-                    if (textSendWaveHighVoltageTextView.getText().equals("VPP")) {
-                        textSendWaveHighVoltageTextView.setText("High Voltage");
-                        textSendWaveLowVoltageTextView.setText("Low Voltage");
-                    } else {
-                        textSendWaveHighVoltageTextView.setText("VPP");
-                        textSendWaveLowVoltageTextView.setText("Offset");
-                    }
-
-
-                    break;
-                case R.id.clearChart:
-
-                    //清空数据
-                    runOnUiThread(() -> {
-                        try {
-                            mLineChartUtil = new LineChartUtil(mLineChart);
-                            mLineChartUtil.refresh();
-                            mLineChartUtil.initLineChart(new ArrayList());
-                            mLineChartUtil.initLineChartData();
-                        } catch (Exception e){
-                            e.printStackTrace();
-                        }
-                    });
-
-                    MainActivity.map1.clear();
-                    MainActivity.map1.put("Cnt","0");
-                    MainActivity.VolCntMap.clear();
-                    MainActivity.VolCntMap.put("VolCnt","0");
-                    MainActivity.list.clear();
-                    MainActivity.limitLineList.clear();
-
-                    textRecvDataInfo.setText("");
-
-                    for (int i = 0; i < MainActivity.RecvDataVoltageFloat.length; i++) {
-                        RecvDataVoltageFloat[i] = 0f;
-                    }
-                    MainActivity.cursorVisible = false;
-                    mLineChartUtil.DeleteLimitLine();
-                    break;
-                case R.id.cursorSwitch:
-
-                    runOnUiThread(() -> {
-                        try {
-                            mLineChartUtil.addEntry(1000, list, MainActivity.chartDataArray);
-                        } catch (Exception e) {
-                            Log.w("MainActivity", "格式化数值失败 dataUI");
-                        }
-                    });
-                    runOnUiThread(() -> {
-                        try {
-                            mLineChartUtil.addEntry(190, list, MainActivity.chartDataArray);
-                        } catch (Exception e) {
-                            Log.w("MainActivity", "格式化数值失败 dataUI");
-                        }
-                    });
-                    runOnUiThread(() -> {
-                        try {
-                            mLineChartUtil.addEntry(1200, list, MainActivity.chartDataArray);
-                        } catch (Exception e) {
-                            Log.w("MainActivity", "格式化数值失败 dataUI");
-                        }
-                    });
-                    runOnUiThread(() -> {
-                        try {
-                            mLineChartUtil.addEntry(500, list, MainActivity.chartDataArray);
-                        } catch (Exception e) {
-                            Log.w("MainActivity", "格式化数值失败 dataUI");
-                        }
-                    });
-                    runOnUiThread(() -> {
-                        try {
-                            mLineChartUtil.addEntry(100, list, MainActivity.chartDataArray);
-                        } catch (Exception e) {
-                            Log.w("MainActivity", "格式化数值失败 dataUI");
-                        }
-                    });
-                    runOnUiThread(() -> {
-                        try {
-                            mLineChartUtil.addEntry(-900, list, MainActivity.chartDataArray);
-                        } catch (Exception e) {
-                            Log.w("MainActivity", "格式化数值失败 dataUI");
-                        }
-                    });
-                    runOnUiThread(() -> {
-                        try {
-                            mLineChartUtil.addEntry(5000, list, MainActivity.chartDataArray);
-                        } catch (Exception e) {
-                            Log.w("MainActivity", "格式化数值失败 dataUI");
-                        }
-                    });
-                    runOnUiThread(() -> {
-                        try {
-                            mLineChartUtil.addEntry(1900, list, MainActivity.chartDataArray);
-                        } catch (Exception e) {
-                            Log.w("MainActivity", "格式化数值失败 dataUI");
-                        }
-                    });
-
-                    if (limitLineList.isEmpty()) {
-                        limitLineList.add(0f);
-                        limitLineList.add(0f);
-                    }
-
-                    MainActivity.cursorVisible = !MainActivity.cursorVisible;
-                    System.out.println(mLineChartUtil.getHighVisX()+"  "+mLineChartUtil.getLowVisX());
-                    if (MainActivity.cursorVisible) {
-                        mLineChartUtil.ShowLimitLine(limitLineList);
-                    } else {
-                        limitLineList.clear();
-                        currX1 = 0f;
-                        currX2 = 0f;
-                        mLineChartUtil.DeleteLimitLine();
-                    }
-                    showCursorInfo(currX1, currX2);
-                    break;
-                case R.id.X1U:
-                    if (MainActivity.cursorVisible) {
-                        if (limitLineList.isEmpty()) {
-                            System.out.println("ff");
-                            limitLineList.add(0f);
-                            limitLineList.add(0f);
-                        }
-                        if (deltaX < 20) currX1 += 1;
-                        else if (deltaX < 60) currX1 += 3;
-                        else currX1 += 8;
-                        if (currX1 < lowVisX) currX1 = (float) (Math.round(lowVisX) + 1);
-                        if (currX1 > highVisX) currX1 = (float) (Math.round(highVisX) - 1);
-                        limitLineList.clear();
-                        limitLineList.add(currX1);
-                        limitLineList.add(currX2);
-                        mLineChartUtil.DeleteLimitLine();
-                        mLineChartUtil.ShowLimitLine(limitLineList);
-                        mLineChart.invalidate();
-                        showCursorInfo(currX1, currX2);
-                    }
-                    break;
-                case R.id.X1D:
-                    if (MainActivity.cursorVisible) {
-                        if (limitLineList.isEmpty()) {
-                            System.out.println("ff");
-                            limitLineList.add(0f);
-                            limitLineList.add(0f);
-                        }
-                        if (deltaX < 20) currX1 -= 1;
-                        else if (deltaX < 60) currX1 -= 3;
-                        else currX1 -= 8;
-                        if (currX1 < lowVisX) currX1 = (float) (Math.round(lowVisX) + 1);
-                        if (currX1 > highVisX) currX1 = (float) (Math.round(highVisX) - 1);
-                        limitLineList.clear();
-                        limitLineList.add(currX1);
-                        limitLineList.add(currX2);
-                        mLineChartUtil.DeleteLimitLine();
-                        mLineChartUtil.ShowLimitLine(limitLineList);
-                        mLineChart.invalidate();
-                        showCursorInfo(currX1, currX2);
-                    }
-                    break;
-                case R.id.X2U:
-                    if (MainActivity.cursorVisible) {
-                        if (limitLineList.isEmpty()) {
-                            System.out.println("ff");
-                            limitLineList.add(0f);
-                            limitLineList.add(0f);
-                        }
-                        if (deltaX < 20) currX2 += 1;
-                        else if (deltaX < 60) currX2 += 3;
-                        else currX2 += 8;
-                        if (currX2 < lowVisX) currX2 = (float) (Math.round(lowVisX) + 1);
-                        if (currX2 > highVisX) currX2 = (float) (Math.round(highVisX) - 1);
-                        limitLineList.clear();
-                        limitLineList.add(currX1);
-                        limitLineList.add(currX2);
-                        mLineChartUtil.DeleteLimitLine();
-                        mLineChartUtil.ShowLimitLine(limitLineList);
-                        mLineChart.invalidate();
-                        showCursorInfo(currX1, currX2);
-                    }
-                    break;
-                case R.id.X2D:
-                    if (MainActivity.cursorVisible) {
-                        if (limitLineList.isEmpty()) {
-                            System.out.println("ff");
-                            limitLineList.add(0f);
-                            limitLineList.add(0f);
-                        }
-                        if (deltaX < 20) currX2 -= 1;
-                        else if (deltaX < 60) currX2 -= 3;
-                        else currX2 -= 8;
-                        if (currX2 < lowVisX) currX2 = (float) (Math.round(lowVisX) + 1);
-                        if (currX2 > highVisX) currX2 = (float) (Math.round(highVisX) - 1);
-                        limitLineList.clear();
-                        limitLineList.add(currX1);
-                        limitLineList.add(currX2);
-                        mLineChartUtil.DeleteLimitLine();
-                        mLineChartUtil.ShowLimitLine(limitLineList);
-                        mLineChart.invalidate();
-                        showCursorInfo(currX1, currX2);
                     }
                     break;
             }
@@ -1043,8 +466,7 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
     }
-    public void GetPermission()
-    {
+    public void GetPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             requestList.add(Manifest.permission.BLUETOOTH_SCAN);
             requestList.add(Manifest.permission.BLUETOOTH_ADVERTISE);
@@ -1060,8 +482,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public boolean CheckPermision()
-    {
+    public boolean CheckPermision() {
         if ((ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED)) {//待做：之后根据这个更改下检查权限的问题
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -1133,7 +554,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     if(!deviceName.contains(s))
                     {
-                        if(device.getName()!=null&&device.getName().contains("PLDBT")){
+                        if(device.getName()!=null&&device.getName().contains("BicycleBT")){
                             deviceName.add(s);
                             arrayList.add(device.getAddress());
                             adapter1.notifyDataSetChanged();

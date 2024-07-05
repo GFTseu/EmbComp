@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="forwardGeSpinner">
+        <item>档位1</item>
+        <item>档位2</item>
+        <item>档位3</item>
+    </string-array>
+    <string-array name="backGeSpinner">
+        <item>档位1</item>
+        <item>档位2</item>
+        <item>档位3</item>
+        <item>档位4</item>
+        <item>档位5</item>
+        <item>档位6</item>
+        <item>档位7</item>
+        <item>档位8</item>
+    </string-array>
+</resources>
