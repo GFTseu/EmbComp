@@ -66,16 +66,10 @@ public class MainActivity extends AppCompatActivity {
     private String currentDeviceName="";
     private String currentDeviceAddr="";
 
-    private LineChart mLineChart;
-    private LineChartUtil mLineChartUtil;
 
+    public boolean isConnected = false;
+    public boolean currentConnectStatus = false;
 
-    public static ArrayList list = new ArrayList();
-    public static Map map1 = new HashMap<String, String>();
-    public static Map VolCntMap = new HashMap();
-    public static boolean fakeMode = true;
-    public static ArrayList limitLineList = new ArrayList<>();
-    public static Double unitTime;
 
     public EditText forwardGeValue;
     public EditText backGeValue;
@@ -83,6 +77,8 @@ public class MainActivity extends AppCompatActivity {
     public Spinner backGeSpinner;
     public String currentForwardGeSpinnerString;
     public String currentBackGeSpinnerString;
+    public Integer currentForwardGeSpinnerInteger;
+    public Integer currentBackGeSpinnerInteger;
     public TextView currentStepFrequency;
     public TextView currentVelocity;
 
@@ -100,7 +96,6 @@ public class MainActivity extends AppCompatActivity {
         Button bt0 = (Button) findViewById(R.id.SearchBluetoothBtn);
         Button bt1 = (Button) findViewById(R.id.button1);
         Button bt2 = (Button) findViewById(R.id.button2);
-        Button bt3 = (Button) findViewById(R.id.SendSignalDataBtn);
         Button bt4 = (Button) findViewById(R.id.button4);
 
         Button forwardGeParamDec = (Button) findViewById(R.id.forwardGeParamDec);
@@ -109,14 +104,8 @@ public class MainActivity extends AppCompatActivity {
         Button backGeParamInc = (Button) findViewById(R.id.backGeParamInc);
         Button forwardGeParams = (Button) findViewById(R.id.forwardGeParams);
         Button backGeParams = (Button) findViewById(R.id.backGeParams);
+        Button startTuning = (Button) findViewById(R.id.startTuning);
 
-        mLineChart = findViewById(R.id.chart);
-        mLineChartUtil = new LineChartUtil(mLineChart);
-
-        // 设置LineChart的属性
-        mLineChartUtil.initLineChart(list);
-        // 初始化折线图的数据
-        mLineChartUtil.initLineChartData();
         //新建一个监视器类对象
         MyClickListener mcl = new MyClickListener();
         //button注册监视器
@@ -126,11 +115,11 @@ public class MainActivity extends AppCompatActivity {
         forwardGeParamInc.setOnClickListener(mcl);
         backGeParamDec.setOnClickListener(mcl);
         backGeParamInc.setOnClickListener(mcl);
+        startTuning.setOnClickListener(mcl);
 
         bt0.setOnClickListener(mcl);
         bt1.setOnClickListener(mcl);
         bt2.setOnClickListener(mcl);
-        bt3.setOnClickListener(mcl);
         bt4.setOnClickListener(mcl);
 
         forwardGeValue = (EditText) findViewById(R.id.forwardGeValue);
@@ -142,12 +131,6 @@ public class MainActivity extends AppCompatActivity {
         currentStepFrequency = (TextView) findViewById(R.id.currentStepFreqency);
         currentVelocity = (TextView) findViewById(R.id.currentVelocity);
 
-        map1.put("Cnt","0");
-        VolCntMap.put("VolCnt","0");
-        limitLineList.clear();
-        limitLineList.add(0f);
-        limitLineList.add(0f);
-        unitTime = (double) 0;
 
 
         handler = new Handler(Looper.getMainLooper()) {
@@ -156,6 +139,7 @@ public class MainActivity extends AppCompatActivity {
             public void handleMessage(Message msg) {
                 if (msg.what == 0) { // 接收到Socket数据消息
                     String RecvDataString = (String) msg.obj;
+                    System.out.println(RecvDataString);
                     if (RecvDataString.charAt(1) == '0') {
                         String[] RecvDataStringArray = RecvDataString.split("y");
                         Integer currentStepFrequencyValue = Integer.parseInt(RecvDataStringArray[1]);
@@ -163,8 +147,6 @@ public class MainActivity extends AppCompatActivity {
                         currentStepFrequency.setText("当前踏频："+ currentStepFrequencyValue + "次/分钟");
                         currentVelocity.setText("当前车速：" + currentVelocityValue + "km/h");
                     }
-
-
 
                 } else {
                     super.handleMessage(msg);
@@ -209,6 +191,11 @@ public class MainActivity extends AppCompatActivity {
                         deviceName.add(con);
                         adapter1.notifyDataSetChanged();
                         //   handler.post(new ReceivedRunnable(bluetoothSocket,textRecvDataInfo));
+
+
+                        currentConnectStatus = true;
+
+
                         new SocketTask(bluetoothSocket, handler).execute();
 
 
@@ -256,7 +243,16 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onItemSelected(AdapterView<?> adapter,View view,int position,long id) {
             currentForwardGeSpinnerString = adapter.getItemAtPosition(position).toString();
-            forwardGeValue.setText(forwardGeValueStored[Integer.parseInt(currentForwardGeSpinnerString.substring(2))-1].toString());
+            currentForwardGeSpinnerInteger = Integer.parseInt(currentForwardGeSpinnerString.substring(2));
+            forwardGeValue.setText(forwardGeValueStored[currentForwardGeSpinnerInteger-1].toString());
+            String forwardSpinnerListenerBluetoothSendString = "B0" + currentForwardGeSpinnerInteger +"E\n";
+            if (currentConnectStatus) {
+                try {
+                    bluetoothSocket.getOutputStream().write(forwardSpinnerListenerBluetoothSendString.getBytes());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
 
         @Override
@@ -267,49 +263,43 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onItemSelected(AdapterView<?> adapter,View view,int position,long id) {
             currentBackGeSpinnerString = adapter.getItemAtPosition(position).toString();
-            backGeValue.setText(backGeValueStored[Integer.parseInt(currentBackGeSpinnerString.substring(2))-1].toString());
+            currentBackGeSpinnerInteger = Integer.parseInt(currentBackGeSpinnerString.substring(2));
+            backGeValue.setText(backGeValueStored[currentBackGeSpinnerInteger-1].toString());
+            String BackSpinnerListenerBluetoothSendString = "";
+            if (currentBackGeSpinnerInteger < 7) BackSpinnerListenerBluetoothSendString = "B0" + (currentBackGeSpinnerInteger+3) +"E\n";
+            else if (currentBackGeSpinnerInteger == 7) BackSpinnerListenerBluetoothSendString = "B0aE\n";
+            else if (currentBackGeSpinnerInteger == 8) BackSpinnerListenerBluetoothSendString = "B0bE\n";
+            if (currentConnectStatus) {
+                try {
+                    bluetoothSocket.getOutputStream().write(BackSpinnerListenerBluetoothSendString.getBytes());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
 
         @Override
         public void onNothingSelected(AdapterView<?> arg0) {}
     }
 
-    public void btGeValueSend() {
-        String s = "B0";
-        for (int i: forwardGeValueStored) s += (String.format("%02d", i+50));
-        s += ("b");
-        for (int i: backGeValueStored) s += (String.format("%02d", i+50));
-        s += ("E\n");
-        try {
-            bluetoothSocket.getOutputStream().write(s.getBytes());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     //重写button点击事件
     class MyClickListener implements View.OnClickListener {
 
-        boolean isConnected = false;
         TextView textView = (TextView)findViewById(R.id.TextView0);
+        String commandBack1 = "B04E\n";
+        Integer currentForwardGeValue;
+        Integer currentBackGeValue;
+        String btSendString = "";
+        boolean startTuningStatus = false;
+        Button startTuningBtn = (Button) findViewById(R.id.startTuning);
 
         @Override
         public void onClick(View v) {
-            if (limitLineList.isEmpty()) {
-                limitLineList.add(0f);
-                limitLineList.add(0f);
-            }
-
-            String commandBack1 = "B1E\n";
-            int currentForwardGeValue;
-            int currentBackGeValue;
-
             switch (v.getId()) {
                 case R.id.SearchBluetoothBtn:
                     arrayList.clear();
                     deviceName.clear();
                     blueToothController.findDevice();
-                    MainActivity.fakeMode = (!MainActivity.fakeMode);
                     break;
                 case R.id.forwardGeParams: case R.id.backGeParams:
                     try {
@@ -323,40 +313,74 @@ public class MainActivity extends AppCompatActivity {
                     currentForwardGeValue = Integer.parseInt(forwardGeValue.getText().toString());
                     currentForwardGeValue -= 1;
                     // 将结果存到数组
-                    forwardGeValueStored[Integer.parseInt(currentForwardGeSpinnerString.substring(2))-1] = currentForwardGeValue;
+                    currentForwardGeSpinnerInteger = Integer.parseInt(currentForwardGeSpinnerString.substring(2));
+                    forwardGeValueStored[currentForwardGeSpinnerInteger-1] = currentForwardGeValue;
                     // 显示结果
                     forwardGeValue.setText(String.valueOf(currentForwardGeValue));
-                    btGeValueSend();
+                    btSendString = "B1" + currentForwardGeSpinnerString.substring(2) + "E\n";
+                    try {
+                        bluetoothSocket.getOutputStream().write(btSendString.getBytes());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     break;
                 case R.id.forwardGeParamInc:
                     // 修改档位数值
                     currentForwardGeValue = Integer.parseInt(forwardGeValue.getText().toString());
                     currentForwardGeValue += 1;
                     // 将结果存到数组
-                    forwardGeValueStored[Integer.parseInt(currentForwardGeSpinnerString.substring(2))-1] = currentForwardGeValue;
+                    currentForwardGeSpinnerInteger = Integer.parseInt(currentForwardGeSpinnerString.substring(2));
+                    forwardGeValueStored[currentForwardGeSpinnerInteger-1] = currentForwardGeValue;
                     // 显示结果
                     forwardGeValue.setText(String.valueOf(currentForwardGeValue));
-                    btGeValueSend();
+                    btSendString = "B2" + currentForwardGeSpinnerString.substring(2) + "E\n";
+                    try {
+                        bluetoothSocket.getOutputStream().write(btSendString.getBytes());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     break;
                 case R.id.backGeParamDec:
                     // 修改档位数值
                     currentBackGeValue = Integer.parseInt(backGeValue.getText().toString());
                     currentBackGeValue -= 1;
                     // 将结果存到数组
-                    backGeValueStored[Integer.parseInt(currentBackGeSpinnerString.substring(2))-1] = currentBackGeValue;
+                    currentBackGeSpinnerInteger = Integer.parseInt(currentBackGeSpinnerString.substring(2));
+                    backGeValueStored[currentBackGeSpinnerInteger-1] = currentBackGeValue;
                     // 显示结果
                     backGeValue.setText(String.valueOf(currentBackGeValue));
-                    btGeValueSend();
+
+                    // 蓝牙发送
+                    if (currentBackGeSpinnerInteger < 7)
+                        btSendString = "B1" + (currentBackGeSpinnerInteger+3) + "E\n";
+                    else if (currentBackGeSpinnerInteger == 7) btSendString = "B1aE\n";
+                    else if (currentBackGeSpinnerInteger == 8) btSendString = "B1bE\n";
+                    try {
+                        bluetoothSocket.getOutputStream().write(btSendString.getBytes());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     break;
                 case R.id.backGeParamInc:
                     // 修改档位数值
                     currentBackGeValue = Integer.parseInt(backGeValue.getText().toString());
                     currentBackGeValue += 1;
                     // 将结果存到数组
-                    backGeValueStored[Integer.parseInt(currentBackGeSpinnerString.substring(2))-1] = currentBackGeValue;
+                    currentBackGeSpinnerInteger = Integer.parseInt(currentBackGeSpinnerString.substring(2));
+                    backGeValueStored[currentBackGeSpinnerInteger-1] = currentBackGeValue;
                     // 显示结果
                     backGeValue.setText(String.valueOf(currentBackGeValue));
-                    btGeValueSend();
+
+                    // 蓝牙发送
+                    if (currentBackGeSpinnerInteger < 7)
+                        btSendString = "B2" + (currentBackGeSpinnerInteger+3) + "E\n";
+                    else if (currentBackGeSpinnerInteger == 7) btSendString = "B2aE\n";
+                    else if (currentBackGeSpinnerInteger == 8) btSendString = "B2bE\n";
+                    try {
+                        bluetoothSocket.getOutputStream().write(btSendString.getBytes());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     break;
 
                 case R.id.button1:
@@ -401,6 +425,26 @@ public class MainActivity extends AppCompatActivity {
                             throw new RuntimeException(e);
                         }
                     }
+                    break;
+                case R.id.startTuning:
+                    if (startTuningStatus) {
+                        startTuningBtn.setText("开始调试");
+                        startTuningBtn.setTextColor(getResources().getColor(R.color.gray_1));
+                        startTuningBtn.setBackgroundColor(getResources().getColor(R.color.blue_1));
+                    } else {
+                        startTuningBtn.setText("结束调试");
+                        startTuningBtn.setTextColor(getResources().getColor(R.color.MistyRose1));
+                        startTuningBtn.setBackgroundColor(getResources().getColor(R.color.OrangeRed1));
+                        String startTuningSendString = "B01E\nB04E\n";
+                        if (currentConnectStatus) {
+                            try {
+                                bluetoothSocket.getOutputStream().write(startTuningSendString.getBytes());
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    }
+                    startTuningStatus = !startTuningStatus;
                     break;
             }
         }
